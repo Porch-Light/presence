@@ -4,6 +4,8 @@ COPY package.json package-lock.json ./
 RUN npm ci --omit=dev
 COPY src ./src
 # Statuses and delegates are JSON files under /data: mount a volume there or they vanish with the container.
+# The directory must belong to the unprivileged user, or a fresh volume mounts root-owned and every write fails.
+RUN mkdir /data && chown node:node /data
 ENV PORT=3010 PRESENCE_DATA=/data
 VOLUME /data
 EXPOSE 3010

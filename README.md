@@ -32,6 +32,10 @@ docker build -t presence .
 docker run -d --name presence -p 3010:3010 -v presence-data:/data presence
 ```
 
+The container runs as the unprivileged `node` user (uid 1000), so `/data` must be writable by it. A volume created by an
+earlier image of this repo is root-owned and fails with `500 internal error` on every save (the log shows `EACCES`); fix it once with
+`docker run --rm -v presence-data:/data alpine chown -R 1000:1000 /data`, or recreate the volume. A bind mount needs the same ownership.
+
 It speaks plain HTTP: put it behind a reverse proxy that terminates HTTPS (the phone apps refuse plain `http://` in release builds).
 It has no path prefix of its own, so a proxy can serve it at `/presence/` as long as it strips that prefix. The Porchlight
 apps get the URL baked in at build time (`PRESENCE_URL`, with a trailing slash).
